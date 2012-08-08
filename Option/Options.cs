@@ -10,6 +10,10 @@ namespace ObjectUtility
     {
         public static Option<T> make<T>(Func<T> f)
         {
+            if (f == null) {
+                return new None<T>();
+            }
+
             try {
                 T v = f();
                 if (v == null) {
@@ -34,7 +38,7 @@ namespace ObjectUtility
                 get { return default(T); }
             }
 
-            public IEnumerator<T> GetEnumerator()
+            public virtual IEnumerator<T> GetEnumerator()
             {
                 throw new NotImplementedException();
             }
@@ -43,16 +47,61 @@ namespace ObjectUtility
             {
                 throw new NotImplementedException();
             }
+
+            public virtual IEnumerable<TResult> Select<TSource, TResult>(Func<TSource, TResult> selector) where TSource : T
+            {
+                return default(IEnumerable<TResult>);
+            }
         }
 
         public class None<T> : Option<T>
         {
+            private class Enumerator<U> : IEnumerator<U>
+            {
+                public U Current
+                {
+                    get { return default(U); }
+                }
+
+                object System.Collections.IEnumerator.Current
+                {
+                    get { throw new NotImplementedException(); }
+                }
+
+                public bool MoveNext()
+                {
+                    return false;
+                }
+
+                public void Reset()
+                {
+                    throw new NotSupportedException();
+                }
+
+                public void Dispose()
+                {
+                    return; // do nothing.
+                }
+            }
+
+            public override IEnumerator<T> GetEnumerator()
+            {
+                return new Enumerator<T>();
+            }
+
+            public override IEnumerable<TResult> Select<TSource, TResult>(Func<TSource, TResult> selector)
+            {
+                return Options.make<TResult>(null);
+            }
         }
 
         public class Some<T> : Option<T>
         {
             public Some(T v)
             {
+                if (v == null) {
+                    throw new InvalidOperationException();
+                }
                 this.value_ = v;
             }
 
@@ -68,6 +117,60 @@ namespace ObjectUtility
                 {
                     return this.value_;
                 }
+            }
+
+            private class Enumerator<U> : IEnumerator<U>
+            {
+                private U value;
+                private bool isReady = false;
+
+                public Enumerator(U v)
+                {
+                    if (v == null) {
+                        throw new InvalidOperationException();
+                    }
+                    this.value = v;
+                }
+
+                public U Current
+                {
+                    get { return isReady ? this.value : default(U); }
+                }
+
+                object System.Collections.IEnumerator.Current
+                {
+                    get { throw new NotImplementedException(); }
+                }
+
+                public bool MoveNext()
+                {
+                    if (!isReady) {
+                        isReady = true;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+
+                public void Reset()
+                {
+                    throw new NotSupportedException();
+                }
+
+                public void Dispose()
+                {
+                    return; // do nothing.
+                }
+            }
+
+            public override IEnumerator<T> GetEnumerator()
+            {
+                return new Enumerator<T>(value);
+            }
+
+            public override IEnumerable<TResult> Select<TSource, TResult>(Func<TSource, TResult> selector)
+            {
+                return Options.make(() => selector((TSource)this.value));
             }
         }
     }
