@@ -26,6 +26,17 @@ namespace ObjectUtility
             }
         }
 
+        public static Option<TResult> Select<TSource, TResult>(
+            this Option<TSource> source,
+            Func<TSource, TResult> selector)
+        {
+            if (source.IsAvailable) {
+                return make(() => selector(source.value));
+            } else {
+                return new None<TResult>();
+            }
+        }
+
         public class Option<T> : IEnumerable<T>
         {
             public virtual bool IsAvailable
@@ -46,11 +57,6 @@ namespace ObjectUtility
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
             {
                 throw new NotImplementedException();
-            }
-
-            public virtual IEnumerable<TResult> Select<TSource, TResult>(Func<TSource, TResult> selector) where TSource : T
-            {
-                return default(IEnumerable<TResult>);
             }
         }
 
@@ -87,11 +93,6 @@ namespace ObjectUtility
             public override IEnumerator<T> GetEnumerator()
             {
                 return new Enumerator<T>();
-            }
-
-            public override IEnumerable<TResult> Select<TSource, TResult>(Func<TSource, TResult> selector)
-            {
-                return Options.make<TResult>(null);
             }
         }
 
@@ -166,11 +167,6 @@ namespace ObjectUtility
             public override IEnumerator<T> GetEnumerator()
             {
                 return new Enumerator<T>(value);
-            }
-
-            public override IEnumerable<TResult> Select<TSource, TResult>(Func<TSource, TResult> selector)
-            {
-                return Options.make(() => selector((TSource)this.value));
             }
         }
     }

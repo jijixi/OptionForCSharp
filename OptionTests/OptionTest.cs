@@ -48,6 +48,18 @@ namespace OptionTests
             } catch (Exception e) {
                 Assert.Fail("should not be thrown any exceptions, but thrown {0}", e.ToString());
             }
+
+            bool shouldThrow = true;
+            Func<string, string> f = (s) =>
+            {
+                if (shouldThrow) {
+                    throw new NullReferenceException();
+                }
+                return null;
+            };
+            var none = from s in Options.make(() => "foo")
+                       select f(s);
+            Assert.IsTrue(none is Options.None<string>);
         }
 
         [TestMethod]
@@ -70,9 +82,10 @@ namespace OptionTests
         {
             bool shouldThrow = true;
             var result = Options.make(() => "")
+                .Select(s => "test start")
                 .Select(s => {
                     if (shouldThrow) {
-                        //throw new NullReferenceException();
+                        throw new NullReferenceException();
                     }
                     return "foo";
                 })
@@ -81,7 +94,7 @@ namespace OptionTests
             Assert.IsNotNull(result);
             InvalidOperationException noValue = null;
             try {
-                result.First();
+                var none = result.First();
             } catch (InvalidOperationException e) {
                 noValue = e;
             }
