@@ -21,7 +21,7 @@ namespace ObjectUtility
                 } else {
                     return new Some<T>(v);
                 }
-            } catch (Exception) {
+            } catch (NullReferenceException) {
                 return new None<T>();
             }
         }

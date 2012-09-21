@@ -1,4 +1,5 @@
-bin
-obj
-obj
-bin
+bin/
+obj/
+TestResults/
+Debug/
+*.suo

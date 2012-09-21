@@ -27,7 +27,7 @@ namespace OptionTests
             none = Options.make<string>(() =>
             {
                 if (s == null) {
-                    throw new Exception();
+                    throw new NullReferenceException();
                 } else {
                     return s;
                 }
