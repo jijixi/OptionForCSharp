@@ -14,17 +14,17 @@ namespace OptionTests
         [TestMethod]
         public void TestMakeFunction()
         {
-            var none = Options.make<string>(() => null);
+            var none = Options.Make<string>(() => null);
             Assert.IsInstanceOfType(none, typeof(Options.None<string>));
             Assert.IsFalse(none.IsAvailable);
             Assert.AreEqual(default(string), none.value);
-            var some = Options.make(() => "This" + " is" + " test.");
+            var some = Options.Make(() => "This" + " is" + " test.");
             Assert.IsInstanceOfType(some, typeof(Options.Some<string>));
             Assert.IsTrue(some.IsAvailable);
             Assert.AreEqual("This is test.", some.value);
 
             string s = null;
-            none = Options.make<string>(() =>
+            none = Options.Make<string>(() =>
             {
                 if (s == null) {
                     throw new NullReferenceException();
@@ -40,7 +40,7 @@ namespace OptionTests
         public void TestLinqQuery()
         {
             try {
-                var result = from s in Options.make(() => "foo")
+                var result = from s in Options.Make(() => "foo")
                              select (s + "bar");
                 Assert.AreEqual("foobar", result.First());
             } catch (AssertFailedException) {
@@ -57,7 +57,7 @@ namespace OptionTests
                 }
                 return null;
             };
-            var none = from s in Options.make(() => "foo")
+            var none = from s in Options.Make(() => "foo")
                        select f(s);
             Assert.IsTrue(none is Options.None<string>);
         }
@@ -66,7 +66,7 @@ namespace OptionTests
         public void TestLinqMethod()
         {
             try {
-                var result = Options.make(() => "foo")
+                var result = Options.Make(() => "foo")
                     .Select(s => s + "bar")
                     .Select(s => s + "baz");
                 Assert.AreEqual("foobarbaz", result.First());
@@ -81,7 +81,7 @@ namespace OptionTests
         public void TestIgnoreWhenNone()
         {
             bool shouldThrow = true;
-            var result = Options.make(() => "")
+            var result = Options.Make(() => "")
                 .Select(s => "test start")
                 .Select(s => {
                     if (shouldThrow) {
@@ -99,6 +99,16 @@ namespace OptionTests
                 noValue = e;
             }
             Assert.IsNotNull(noValue);
+        }
+
+        [TestMethod]
+        public void TestBind_()
+        {
+            bool touched = false;
+            Options.Make(() => "")
+                .Bind(s => String.IsNullOrEmpty(s) ? null : "not null")
+                .Bind_(s => { touched = true; });
+            Assert.IsFalse(touched);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace ObjectUtility
 {
     public static class Options
     {
-        public static Option<T> make<T>(Func<T> f)
+        public static Option<T> Make<T>(Func<T> f)
         {
             if (f == null) {
                 return new None<T>();
@@ -30,10 +30,26 @@ namespace ObjectUtility
             this Option<TSource> source,
             Func<TSource, TResult> selector)
         {
-            if (source.IsAvailable) {
-                return make(() => selector(source.value));
+            return source.Bind(selector);
+        }
+
+        public static Option<TResult> Bind<TSource, TResult>(
+            this Option<TSource> self,
+            Func<TSource, TResult> func)
+        {
+            if (self.IsAvailable) {
+                return Make(() => func(self.value));
             } else {
                 return new None<TResult>();
+            }
+        }
+
+        public static void Bind_<T>(
+            this Option<T> source,
+            Action<T> action)
+        {
+            if (source.IsAvailable) {
+                action(source.value);
             }
         }
 
