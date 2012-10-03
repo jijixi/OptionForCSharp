@@ -17,11 +17,11 @@ namespace OptionTests
             var none = Options.Make<string>(() => null);
             Assert.IsInstanceOfType(none, typeof(Options.None<string>));
             Assert.IsFalse(none.IsAvailable);
-            Assert.AreEqual(default(string), none.value);
+            Assert.AreEqual(default(string), none.Value);
             var some = Options.Make(() => "This" + " is" + " test.");
             Assert.IsInstanceOfType(some, typeof(Options.Some<string>));
             Assert.IsTrue(some.IsAvailable);
-            Assert.AreEqual("This is test.", some.value);
+            Assert.AreEqual("This is test.", some.Value);
 
             string s = null;
             none = Options.Make<string>(() =>

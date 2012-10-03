@@ -38,7 +38,7 @@ namespace ObjectUtility
             Func<TSource, TResult> func)
         {
             if (self.IsAvailable) {
-                return Make(() => func(self.value));
+                return Make(() => func(self.Value));
             } else {
                 return new None<TResult>();
             }
@@ -49,20 +49,21 @@ namespace ObjectUtility
             Action<T> action)
         {
             if (source.IsAvailable) {
-                action(source.value);
+                action(source.Value);
             }
         }
 
-        public class Option<T> : IEnumerable<T>
+        public abstract class Option<T> : IEnumerable<T>
         {
             public virtual bool IsAvailable
             {
                 get { return false; }
             }
 
-            public virtual T value
+            public virtual T Value
             {
                 get { return default(T); }
+                protected set { /* ignore */ }
             }
 
             public virtual IEnumerator<T> GetEnumerator()
@@ -76,7 +77,7 @@ namespace ObjectUtility
             }
         }
 
-        public class None<T> : Option<T>
+        public sealed class None<T> : Option<T>
         {
             private class Enumerator<U> : IEnumerator<U>
             {
@@ -112,29 +113,22 @@ namespace ObjectUtility
             }
         }
 
-        public class Some<T> : Option<T>
+        public sealed class Some<T> : Option<T>
         {
             public Some(T v)
             {
                 if (v == null) {
                     throw new InvalidOperationException();
                 }
-                this.value_ = v;
+                this.Value = v;
             }
 
-            override public bool IsAvailable
+            public override bool IsAvailable
             {
                 get { return true; }
             }
 
-            private T value_;
-            override public T value
-            {
-                get
-                {
-                    return this.value_;
-                }
-            }
+            public override T Value { get; protected set; }
 
             private class Enumerator<U> : IEnumerator<U>
             {
@@ -182,7 +176,7 @@ namespace ObjectUtility
 
             public override IEnumerator<T> GetEnumerator()
             {
-                return new Enumerator<T>(value);
+                return new Enumerator<T>(this.Value);
             }
         }
     }
